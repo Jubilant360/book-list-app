@@ -55,9 +55,15 @@
   const toastEl = document.getElementById('toast');
   let toastTimeout = null;
 
+  // Rating Picker Instances
+  let addRatingPicker = null;
+  let editRatingPicker = null;
+
   // --- Initialization ---
   function init() {
     loadBooksFromStorage();
+    addRatingPicker = initRatingPicker('addStarsWrapper', 'bookRating', 'addRatingText');
+    editRatingPicker = initRatingPicker('editStarsWrapper', 'editBookRatingInput', 'editRatingText');
     attachEventListeners();
     render();
   }
@@ -220,6 +226,49 @@
     });
 
     metaDiv.appendChild(badge);
+
+    // Star Rating Display & Quick-Rate on Card
+    const ratingContainer = document.createElement('div');
+    ratingContainer.className = 'book-card-rating';
+    ratingContainer.setAttribute(
+      'title',
+      book.rating ? `Rating: ${book.rating} of 5 stars (click to change)` : 'Rate this book (1 to 5 stars)'
+    );
+
+    const starsGroup = document.createElement('div');
+    starsGroup.className = 'card-stars-group';
+
+    const currentRating = parseInt(book.rating, 10) || 0;
+
+    for (let i = 1; i <= 5; i++) {
+      const starBtn = document.createElement('button');
+      starBtn.type = 'button';
+      starBtn.className = `card-star-btn ${i <= currentRating ? 'is-active' : ''}`;
+      starBtn.setAttribute('data-rating', i);
+      starBtn.setAttribute('aria-label', `Rate ${i} of 5 stars`);
+      starBtn.title = `Rate ${i} star${i > 1 ? 's' : ''}`;
+      starBtn.innerHTML = `
+        <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+        </svg>
+      `;
+
+      starBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setBookRating(book.id, i);
+      });
+
+      starsGroup.appendChild(starBtn);
+    }
+
+    const ratingText = document.createElement('span');
+    ratingText.className = `rating-badge-text ${currentRating > 0 ? 'has-rating' : ''}`;
+    ratingText.textContent = currentRating > 0 ? `${currentRating}/5` : 'Rate';
+
+    ratingContainer.appendChild(starsGroup);
+    ratingContainer.appendChild(ratingText);
+
+    metaDiv.appendChild(ratingContainer);
     infoDiv.appendChild(titleEl);
     infoDiv.appendChild(authorEl);
     infoDiv.appendChild(metaDiv);
@@ -267,6 +316,62 @@
     return card;
   }
 
+  // --- Star Rating Widget Initializer ---
+  function initRatingPicker(wrapperId, inputId, textId) {
+    const wrapper = document.getElementById(wrapperId);
+    const input = document.getElementById(inputId);
+    const text = document.getElementById(textId);
+    if (!wrapper || !input || !text) return null;
+
+    const buttons = wrapper.querySelectorAll('.star-picker-btn');
+
+    function updateVisuals(rating, isHover) {
+      buttons.forEach(btn => {
+        const val = parseInt(btn.getAttribute('data-value'), 10);
+        if (isHover) {
+          btn.classList.toggle('is-hovered', val <= rating);
+        } else {
+          btn.classList.remove('is-hovered');
+          btn.classList.toggle('is-active', val <= rating);
+        }
+      });
+
+      if (rating > 0) {
+        text.textContent = `${rating} of 5 star${rating > 1 ? 's' : ''}`;
+      } else {
+        text.textContent = 'Select rating (1-5)';
+      }
+    }
+
+    buttons.forEach(btn => {
+      const val = parseInt(btn.getAttribute('data-value'), 10);
+
+      btn.addEventListener('mouseenter', () => {
+        updateVisuals(val, true);
+      });
+
+      btn.addEventListener('click', () => {
+        const currentVal = parseInt(input.value, 10) || 0;
+        const newVal = currentVal === val ? 0 : val;
+        input.value = newVal;
+        updateVisuals(newVal, false);
+      });
+    });
+
+    wrapper.addEventListener('mouseleave', () => {
+      const currentVal = parseInt(input.value, 10) || 0;
+      updateVisuals(currentVal, false);
+    });
+
+    return {
+      setValue: (val) => {
+        input.value = val;
+        updateVisuals(val, false);
+      },
+      getValue: () => parseInt(input.value, 10) || 0
+    };
+  }
+
   // --- Add Book Handler ---
   function handleAddBook(e) {
     e.preventDefault();
@@ -274,6 +379,7 @@
     const title = bookTitleInput.value.trim();
     const author = bookAuthorInput.value.trim();
     const isRead = bookIsReadInput.checked;
+    const rating = addRatingPicker ? addRatingPicker.getValue() : 0;
 
     if (!title || !author) {
       showToast('Please enter both a title and an author');
@@ -285,6 +391,7 @@
       title: title,
       author: author,
       isRead: isRead,
+      rating: rating,
       createdAt: Date.now()
     };
 
@@ -295,8 +402,28 @@
 
     // Reset Form
     addBookForm.reset();
+    if (addRatingPicker) addRatingPicker.setValue(0);
     bookTitleInput.focus();
     showToast(`Added "${newBook.title}"`);
+  }
+
+  // --- Set Book Rating Directly ---
+  function setBookRating(bookId, newRating) {
+    const book = books.find(b => b.id === bookId);
+    if (!book) return;
+
+    const currentRating = parseInt(book.rating, 10) || 0;
+    book.rating = (currentRating === newRating) ? 0 : newRating;
+    book.updatedAt = Date.now();
+
+    saveBooksToStorage();
+    render();
+
+    if (book.rating > 0) {
+      showToast(`Rated "${book.title}" ${book.rating} of 5 stars ★`);
+    } else {
+      showToast(`Removed rating for "${book.title}"`);
+    }
   }
 
   // --- Toggle Read Status ---
@@ -319,6 +446,9 @@
     editBookTitleInput.value = book.title;
     editBookAuthorInput.value = book.author;
     editBookIsReadInput.checked = book.isRead;
+    if (editRatingPicker) {
+      editRatingPicker.setValue(parseInt(book.rating, 10) || 0);
+    }
 
     editModal.classList.add('active');
     document.body.style.overflow = 'hidden';
@@ -329,6 +459,7 @@
     editModal.classList.remove('active');
     document.body.style.overflow = '';
     editBookForm.reset();
+    if (editRatingPicker) editRatingPicker.setValue(0);
   }
 
   function handleSaveEdit(e) {
@@ -338,6 +469,7 @@
     const title = editBookTitleInput.value.trim();
     const author = editBookAuthorInput.value.trim();
     const isRead = editBookIsReadInput.checked;
+    const rating = editRatingPicker ? editRatingPicker.getValue() : 0;
 
     if (!title || !author) {
       showToast('Title and author cannot be empty');
@@ -350,6 +482,7 @@
     books[bookIndex].title = title;
     books[bookIndex].author = author;
     books[bookIndex].isRead = isRead;
+    books[bookIndex].rating = rating;
     books[bookIndex].updatedAt = Date.now();
 
     saveBooksToStorage();

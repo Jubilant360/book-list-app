@@ -5,6 +5,7 @@ A clean, responsive, and minimalist Book List web application built with pure HT
 ## ✨ Features
 
 - **Add New Books**: Easily track books by Title, Author, and Read status (*Read* or *Not Read*).
+- **1-5 Star Ratings**: Rate books from 1 to 5 stars upon creation, in the edit modal, or by tapping stars directly on the card!
 - **Persistent Storage**: All books are saved locally via `localStorage`—your library stays saved even when you refresh or close the browser.
 - **Dynamic Counters**: View the total count of books at a glance, along with a breakdown of read and unread books.
 - **Quick Status Toggle**: Click on the status badge (*Read* / *Not Read*) on any book card to quickly toggle its reading state.
@@ -43,3 +44,4 @@ No build process, server, or dependencies required!
 ## 📄 License
 
 This project is open source and available under the [MIT License](LICENSE).
+

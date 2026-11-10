@@ -26,6 +26,10 @@
   --warning-text: #92400e;
   --warning-border: #fde68a;
 
+  --star-color: #f59e0b;
+  --star-hover: #fbbf24;
+  --star-empty: #cbd5e1;
+
   --danger: #ef4444;
   --danger-hover: #dc2626;
   --danger-light: #fef2f2;
@@ -243,6 +247,65 @@ input::placeholder {
   user-select: none;
   font-size: 0.9375rem;
   color: var(--text-main);
+  font-weight: 500;
+}
+
+/* Star Rating Controls in Forms */
+.rating-row {
+  margin-top: -0.25rem;
+}
+
+.star-rating-control {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  flex-wrap: wrap;
+}
+
+.stars-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.star-picker-btn {
+  background: transparent;
+  border: none;
+  padding: 3px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--star-empty);
+  border-radius: var(--radius-sm);
+  transition: transform 0.12s ease, color 0.15s ease;
+}
+
+.star-picker-btn:hover {
+  transform: scale(1.18);
+}
+
+.star-picker-btn.is-active,
+.star-picker-btn.is-hovered {
+  color: var(--star-color);
+}
+
+.star-picker-btn.is-active svg,
+.star-picker-btn.is-hovered svg {
+  fill: currentColor;
+  stroke: currentColor;
+}
+
+.star-picker-btn svg {
+  width: 22px;
+  height: 22px;
+  stroke: var(--star-empty);
+  transition: fill 0.15s ease, stroke 0.15s ease, transform 0.1s ease;
+}
+
+.rating-label-text {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
   font-weight: 500;
 }
 
@@ -538,6 +601,67 @@ input::placeholder {
 
 .status-badge.unread .status-dot {
   background-color: #f59e0b;
+}
+
+/* Book Card Star Rating */
+.book-card-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background-color: #f8fafc;
+  border: 1px solid var(--border-color);
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-full);
+}
+
+.card-stars-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.card-star-btn {
+  background: transparent;
+  border: none;
+  padding: 1px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--star-empty);
+  border-radius: 2px;
+  transition: transform 0.1s ease, color 0.12s ease;
+}
+
+.card-star-btn:hover {
+  transform: scale(1.25);
+  color: var(--star-hover);
+}
+
+.card-star-btn.is-active {
+  color: var(--star-color);
+}
+
+.card-star-btn svg {
+  width: 14px;
+  height: 14px;
+  stroke: var(--star-empty);
+  transition: fill 0.12s ease, stroke 0.12s ease;
+}
+
+.card-star-btn.is-active svg {
+  fill: currentColor;
+  stroke: currentColor;
+}
+
+.rating-badge-text {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.rating-badge-text.has-rating {
+  color: #b45309;
 }
 
 /* Book Actions */
