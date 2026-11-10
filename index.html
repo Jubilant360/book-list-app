@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BookTracker &mdash; Personal Book List</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header with Stats -->
+    <header class="app-header">
+      <div class="header-brand">
+        <div class="brand-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          </svg>
+        </div>
+        <div>
+          <h1>Book List</h1>
+          <p class="tagline">Keep track of your reading</p>
+        </div>
+      </div>
+
+      <!-- Total Books Counter -->
+      <div class="stats-card">
+        <div class="stat-item total-stat">
+          <span class="stat-number" id="totalBooksCount">0</span>
+          <span class="stat-label">Total Books</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-number read-stat-number" id="readBooksCount">0</span>
+          <span class="stat-label">Read</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-number unread-stat-number" id="unreadBooksCount">0</span>
+          <span class="stat-label">Not Read</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Add Book Card -->
+      <section class="card add-book-card" aria-labelledby="add-book-heading">
+        <div class="card-header">
+          <h2 id="add-book-heading">Add a New Book</h2>
+        </div>
+        <form id="addBookForm" class="book-form">
+          <div class="form-row">
+            <div class="form-group flex-2">
+              <label for="bookTitle">Title</label>
+              <input 
+                type="text" 
+                id="bookTitle" 
+                name="title" 
+                placeholder="e.g. The Great Gatsby" 
+                required 
+                autocomplete="off"
+                maxlength="120"
+              >
+            </div>
+            <div class="form-group flex-2">
+              <label for="bookAuthor">Author</label>
+              <input 
+                type="text" 
+                id="bookAuthor" 
+                name="author" 
+                placeholder="e.g. F. Scott Fitzgerald" 
+                required 
+                autocomplete="off"
+                maxlength="100"
+              >
+            </div>
+          </div>
+
+          <div class="form-actions-row">
+            <label class="checkbox-container">
+              <input type="checkbox" id="bookIsRead" name="isRead">
+              <span class="custom-checkbox"></span>
+              <span class="checkbox-label">I have read this book</span>
+            </label>
+
+            <button type="submit" class="btn btn-primary" id="addBookBtn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <span>Add Book</span>
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Search & Filter Controls -->
+      <section class="search-section">
+        <div class="search-bar-wrapper">
+          <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input 
+            type="search" 
+            id="searchInput" 
+            placeholder="Search by title or author..." 
+            autocomplete="off"
+            aria-label="Search books by title or author"
+          >
+          <button type="button" id="clearSearchBtn" class="clear-search-btn" title="Clear search" aria-label="Clear search">
+            &times;
+          </button>
+        </div>
+
+        <div class="filter-tabs" role="tablist" aria-label="Filter books by status">
+          <button type="button" class="filter-tab active" data-filter="all" role="tab" aria-selected="true">All</button>
+          <button type="button" class="filter-tab" data-filter="read" role="tab" aria-selected="false">Read</button>
+          <button type="button" class="filter-tab" data-filter="unread" role="tab" aria-selected="false">Not Read</button>
+        </div>
+      </section>
+
+      <!-- Book List Container -->
+      <section class="book-list-section" aria-label="Book collection">
+        <!-- List of books injected via JavaScript -->
+        <div id="booksList" class="books-list"></div>
+
+        <!-- Friendly Empty States -->
+        <div id="emptyState" class="empty-state" style="display: none;">
+          <div class="empty-icon-wrapper">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+            </svg>
+          </div>
+          <h3>Your book list is empty</h3>
+          <p>You haven't added any books yet. Add your first book above to start building your personal library!</p>
+        </div>
+
+        <div id="noResultsState" class="empty-state no-results" style="display: none;">
+          <div class="empty-icon-wrapper">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              <line x1="8" y1="11" x2="14" y2="11"></line>
+            </svg>
+          </div>
+          <h3>No books found</h3>
+          <p>No titles or authors match "<span id="noResultsQuery"></span>". Try another search or clear the filter.</p>
+          <button type="button" class="btn btn-secondary" id="resetSearchBtn">Show All Books</button>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>Data is stored locally in your browser &bull; Simple &amp; Private</p>
+    </footer>
+  </div>
+
+  <!-- Edit Book Modal -->
+  <div id="editModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="editModalTitle">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="editModalTitle">Edit Book</h3>
+        <button type="button" class="modal-close-btn" id="closeEditModalBtn" aria-label="Close dialog">&times;</button>
+      </div>
+      <form id="editBookForm">
+        <input type="hidden" id="editBookId">
+        <div class="form-group">
+          <label for="editBookTitle">Title</label>
+          <input type="text" id="editBookTitle" required maxlength="120">
+        </div>
+        <div class="form-group">
+          <label for="editBookAuthor">Author</label>
+          <input type="text" id="editBookAuthor" required maxlength="100">
+        </div>
+        <div class="form-group">
+          <label class="checkbox-container">
+            <input type="checkbox" id="editBookIsRead">
+            <span class="custom-checkbox"></span>
+            <span class="checkbox-label">Mark as Read</span>
+          </label>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" id="cancelEditBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div id="deleteModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
+    <div class="modal-card modal-confirm">
+      <div class="modal-alert-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 6h18"></path>
+          <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+          <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+          <line x1="10" y1="11" x2="10" y2="17"></line>
+          <line x1="14" y1="11" x2="14" y2="17"></line>
+        </svg>
+      </div>
+      <h3 id="deleteModalTitle">Delete Book?</h3>
+      <p class="modal-message">
+        Are you sure you want to delete <strong id="deleteBookTitle"></strong>? This action cannot be undone.
+      </p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" id="cancelDeleteBtn">Cancel</button>
+        <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Toast -->
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
+
